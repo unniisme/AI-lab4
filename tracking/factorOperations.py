@@ -102,7 +102,40 @@ def joinFactors(factors: ValuesView[Factor]):
 
 
     "*** YOUR CODE HERE ***"
-    raiseNotDefined()
+    def MergeFactors(A : Factor, B : Factor):
+        conditionedVariables = set(A.conditionedVariables()) & set(B.conditionedVariables())
+        unconditionedVariables = set(A.unconditionedVariables()) | set(B.unconditionedVariables())
+        domainDict = {}
+        domainDict.update(A.variableDomainsDict())
+        domainDict.update(B.variableDomainsDict())
+        outFactor = Factor(list(unconditionedVariables), list(conditionedVariables), domainDict)
+
+        assignments = outFactor.getAllPossibleAssignmentDicts()
+
+        for assignment in assignments:
+            prob = A.getProbability(assignment) * B.getProbability(assignment)
+            outFactor.setProbability(assignment, prob)
+
+        return outFactor
+
+    def RecursiveJoin(factors : ValuesView[Factor]):
+        if len(factors) == 1:
+            return factors[0]
+        
+        newFactors = []
+
+        for factor1 in factors:
+            for factor2 in factors:
+                if factor1 != factor2:
+                    newFactor = MergeFactors(factor1, factor2)
+                    if newFactor not in newFactors:
+                        newFactors.append(newFactor)
+
+        return RecursiveJoin(newFactors)
+
+    return RecursiveJoin(factors)
+
+
     "*** END YOUR CODE HERE ***"
 
 ########### ########### ###########
