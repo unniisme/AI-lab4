@@ -103,19 +103,24 @@ def joinFactors(factors: ValuesView[Factor]):
 
     "*** YOUR CODE HERE ***"
     def MergeFactors(A : Factor, B : Factor):
-        #set union
+        """Function to join 2 factors"""
+
+        #set union of unconditioned Variable of both factors
         unconditionedVariables = set(A.unconditionedVariables()) | set(B.unconditionedVariables())
-        #set intersection
+        #set union of conditioned Variable of both factors and remove the unconditioned variable 
         conditionedVariables = (set(A.conditionedVariables()) | set(B.conditionedVariables())) - unconditionedVariables
+        #Domain is the domain of all variables in both given factors
         domainDict = {}
         domainDict.update(A.variableDomainsDict())
         domainDict.update(B.variableDomainsDict())
         #constructor of Factor
         outFactor = Factor(list(unconditionedVariables), list(conditionedVariables), domainDict)
-        #
+        
+        #All possible assignments of the new joined factor
         assignments = outFactor.getAllPossibleAssignmentDicts()
 
         for assignment in assignments:
+            #Point wise product of all entries in CPT
             prob = A.getProbability(assignment) * B.getProbability(assignment)
             outFactor.setProbability(assignment, prob)
 
@@ -123,10 +128,13 @@ def joinFactors(factors: ValuesView[Factor]):
 
     def Join(factors : ValuesView[Factor]):
         factors = list(factors)
+        
+        #pop factors two at a time and join
         while len(factors) > 1:
             factor1 = factors.pop(0)
             factor2 = factors.pop(0)
 
+            #add the joined factor back into the list
             factors.append(MergeFactors(factor1, factor2))
         
         return factors[0]
@@ -184,18 +192,21 @@ def eliminateWithCallTracking(callTrackingList=None):
                     "unconditionedVariables: " + str(factor.unconditionedVariables()))
 
         "*** YOUR CODE HERE ***"
+        
         conditionalVariables = factor.conditionedVariables()
+        #Remove the elimination variable from the unconditional variables in the input factor
         unconditionalVariables = factor.unconditionedVariables() - {eliminationVariable}
-        print(conditionalVariables)
-        print(unconditionalVariables)
-
+        #Resultant factor construction
         outFactor = Factor(unconditionalVariables, conditionalVariables, factor.variableDomainsDict())
         
+        #All possible assignments of the output factor CPT
         assignments = outFactor.getAllPossibleAssignmentDicts()
 
         for assignment in assignments:
+            #Marginalisation
             sum = 0
             for value in factor.variableDomainsDict()[eliminationVariable]:
+                #find sum of CPT entries for each entrie
                 assignment[eliminationVariable] = value
                 sum += factor.getProbability(assignment)
 

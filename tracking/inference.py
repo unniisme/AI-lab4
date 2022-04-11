@@ -62,13 +62,16 @@ def constructBayesNet(gameState: hunters.GameState):
     variableDomainsDict = {}
 
     "*** YOUR CODE HERE ***"
+    #Variables are pacman, 2 ghosts and 2 observed distances 
     variables = [PAC, GHOST0, GHOST1, OBS0, OBS1]
     edges = [(PAC, OBS0), (PAC, OBS1), (GHOST0, OBS0), (GHOST1, OBS1)]
 
+    #define variableDomain as all positions in the board
     variableDomainsDict[PAC] = [(x,y) for x in range(X_RANGE) for y in range(Y_RANGE)]
     variableDomainsDict[GHOST1] = [(x,y) for x in range(X_RANGE) for y in range(Y_RANGE)]
     variableDomainsDict[GHOST0] = [(x,y) for x in range(X_RANGE) for y in range(Y_RANGE)]
 
+    #define obs variableDomain as all possible distances between PacMan and Ghost with added Noise
     variableDomainsDict[OBS0] = [x for x in range(X_RANGE + Y_RANGE + MAX_NOISE - 1)]    
     variableDomainsDict[OBS1] = [x for x in range(X_RANGE + Y_RANGE + MAX_NOISE - 1)]    
 
@@ -197,12 +200,14 @@ def inferenceByVariableEliminationWithCallTracking(callTrackingList=None):
         # join all factors by variable in elimination order and eliminate the variable
         for variable in eliminationOrder:
             currentFactorsList, joinedFactor = joinFactorsByVariable(currentFactorsList, variable)
+            #if there are more than one unconditioned variable
             if len(joinedFactor.unconditionedVariables()) > 1 :
                 marginalizedJoint = eliminate(joinedFactor, variable)
                 currentFactorsList.append(marginalizedJoint)
 
-        
+        #join all remaining factors
         fullJoint = joinFactors(currentFactorsList)
+        #normalise
         queryConditionedOnEvidence = normalize(fullJoint)
         
         return queryConditionedOnEvidence     
