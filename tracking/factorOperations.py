@@ -103,13 +103,16 @@ def joinFactors(factors: ValuesView[Factor]):
 
     "*** YOUR CODE HERE ***"
     def MergeFactors(A : Factor, B : Factor):
-        conditionedVariables = set(A.conditionedVariables()) & set(B.conditionedVariables())
+        #set union
         unconditionedVariables = set(A.unconditionedVariables()) | set(B.unconditionedVariables())
+        #set intersection
+        conditionedVariables = (set(A.conditionedVariables()) | set(B.conditionedVariables())) - unconditionedVariables
         domainDict = {}
         domainDict.update(A.variableDomainsDict())
         domainDict.update(B.variableDomainsDict())
+        #constructor of Factor
         outFactor = Factor(list(unconditionedVariables), list(conditionedVariables), domainDict)
-
+        #
         assignments = outFactor.getAllPossibleAssignmentDicts()
 
         for assignment in assignments:
@@ -118,22 +121,17 @@ def joinFactors(factors: ValuesView[Factor]):
 
         return outFactor
 
-    def RecursiveJoin(factors : ValuesView[Factor]):
-        if len(factors) == 1:
-            return factors[0]
+    def Join(factors : ValuesView[Factor]):
+        factors = list(factors)
+        while len(factors) > 1:
+            factor1 = factors.pop(0)
+            factor2 = factors.pop(0)
+
+            factors.append(MergeFactors(factor1, factor2))
         
-        newFactors = []
-
-        for factor1 in factors:
-            for factor2 in factors:
-                if factor1 != factor2:
-                    newFactor = MergeFactors(factor1, factor2)
-                    if newFactor not in newFactors:
-                        newFactors.append(newFactor)
-
-        return RecursiveJoin(newFactors)
-
-    return RecursiveJoin(factors)
+        return factors[0]
+        
+    return Join(factors)
 
 
     "*** END YOUR CODE HERE ***"
@@ -186,7 +184,25 @@ def eliminateWithCallTracking(callTrackingList=None):
                     "unconditionedVariables: " + str(factor.unconditionedVariables()))
 
         "*** YOUR CODE HERE ***"
-        raiseNotDefined()
+        conditionalVariables = factor.conditionedVariables()
+        unconditionalVariables = factor.unconditionedVariables() - {eliminationVariable}
+        print(conditionalVariables)
+        print(unconditionalVariables)
+
+        outFactor = Factor(unconditionalVariables, conditionalVariables, factor.variableDomainsDict())
+        
+        assignments = outFactor.getAllPossibleAssignmentDicts()
+
+        for assignment in assignments:
+            sum = 0
+            for value in factor.variableDomainsDict()[eliminationVariable]:
+                assignment[eliminationVariable] = value
+                sum += factor.getProbability(assignment)
+
+
+            outFactor.setProbability(assignment, sum)
+
+        return  outFactor
         "*** END YOUR CODE HERE ***"
 
     return eliminate

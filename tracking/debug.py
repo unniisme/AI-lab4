@@ -1,7 +1,30 @@
 from factorOperations import *
 from bayesNet import *
 
-a = Factor(["x"], ["y"], {"x": [0,1], "y": [0,1]})
-b = Factor(["y"], [],{"x": [0,1], "y": [0,1]})
+domainDict = {"x" : [0,1], "y" : [0,1], "z" : ["yeee", "not yee"], "w" : ["asd", 3]}
 
-print(joinFactors([a,b]))
+a = Factor(["x", "z"], ["y", "w"], domainDict)
+
+print(a)
+
+print(eliminate(a, "z"))
+
+
+
+"""
+ factor = x,y
+
+x y
+x' y
+x y'
+x' y'
+ 
+ newFactor = x
+
+x	(y, y')
+x'
+
+
+
+
+"""
